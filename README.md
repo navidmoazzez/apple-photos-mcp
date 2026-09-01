@@ -9,7 +9,6 @@
 
 Give any AI agent real access to your own Apple Photos library, so it can find, see, organize and export your photos instead of guessing.
 
-
 Built and maintained by [Navid Moazzez](https://navid.me?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp).
 
 ```
@@ -30,7 +29,6 @@ Claude: Searching 36,753 items.
 
 Everything runs on your Mac. There is no backend.
 
-
 ## Contents
 
 | | Section | |
@@ -47,8 +45,6 @@ Everything runs on your Mac. There is no backend.
 | 10 | [Configuration](#10-configuration-) | Every setting |
 | 11 | [Troubleshooting](#11-troubleshooting-) | When something breaks |
 | 12 | [FAQ](#12-faq-) | Start here if you are new |
-
----
 
 ## 1. What you can ask it 💬
 
