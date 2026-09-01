@@ -1,0 +1,71 @@
+[project]
+name = "apple-photos-mcp"
+version = "0.1.0"
+description = "Apple Photos MCP server for Claude Code and AI agents. Photo search, scene labels, text in images, faces, places, albums, previews, and exports."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Navid Moazzez" }]
+keywords = ["mcp", "model-context-protocol", "apple-photos", "photos", "macos", "osxphotos", "claude", "claude-code", "ai-agents", "llm-tools"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: MacOS X",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS :: MacOS X",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia :: Graphics",
+]
+dependencies = [
+  "mcp>=1.2.0",
+  "osxphotos>=0.72",
+  "photoscript>=0.3.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/navidmoazzez/apple-photos-mcp"
+Issues = "https://github.com/navidmoazzez/apple-photos-mcp/issues"
+Author = "https://navid.me"
+
+[project.scripts]
+apple-photos-mcp = "apple_photos_mcp.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/apple_photos_mcp"]
+
+# SKILL.md ships inside the package so an agent that installs the server also
+# learns how to drive it. The README teaches a human to install it.
+force-include = { "SKILL.md" = "apple_photos_mcp/SKILL.md" }
+
+[dependency-groups]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "SIM", "UP", "PL", "RUF"]
+ignore = [
+  # An MCP tool must never take the server down. Every tool body catches
+  # broadly on purpose and returns the error to the model as data, which is the
+  # only behavior a client can do anything useful with.
+  "BLE001",
+  "PLR0913",  # tool signatures are wide because search filters are wide
+  "PLR2004",  # score tuning constants read better inline than as names
+  "PLR0917",  # search_photos takes many filters on purpose; they are the API
+  # osxphotos and photoscript are slow to import and pull in native deps. They
+  # are imported at point of use so the server starts fast and so `doctor` can
+  # still explain itself on a machine where they cannot load at all.
+  "PLC0415",
+  # Filters.keep, the ranking loop and the tool registry are each one long flat
+  # sequence by design. Splitting them into helpers to satisfy a counter would
+  # scatter logic that is only readable when read top to bottom.
+  "PLR0911", "PLR0912", "PLR0915", "SIM103",
+]
