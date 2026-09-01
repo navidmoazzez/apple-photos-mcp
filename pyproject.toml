@@ -24,8 +24,12 @@ classifiers = [
 ]
 dependencies = [
   "mcp>=1.2.0",
-  "osxphotos>=0.72",
-  "photoscript>=0.3.0",
+  # macOS only. Both pull in pyobjc, which refuses to build anywhere else:
+  # "error: PyObjC requires macOS to build". Without these markers a plain
+  # `pip install` fails on Linux instead of installing and then telling the
+  # user this server needs a Mac.
+  "osxphotos>=0.72; sys_platform == 'darwin'",
+  "photoscript>=0.3.0; sys_platform == 'darwin'",
 ]
 
 [project.urls]
