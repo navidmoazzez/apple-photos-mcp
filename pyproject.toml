@@ -1,5 +1,9 @@
 [project]
-name = "apple-photos-mcp"
+# PyPI has no scopes, so an owner prefix is the closest equivalent to the
+# @thenavidm npm scope the TypeScript servers use. Applied even though the bare
+# name is free, so both Python packages are named the same way. The installed
+# command is still `apple-photos-mcp`.
+name = "thenavidm-apple-photos-mcp"
 version = "0.1.0"
 description = "Apple Photos MCP server for Claude Code and AI agents. Photo search, scene labels, text in images, faces, places, albums, previews, and exports."
 readme = "README.md"

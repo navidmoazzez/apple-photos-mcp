@@ -7,6 +7,9 @@
 
 Give any AI agent real access to your own Apple Photos library, so it can find, see, organize and export your photos instead of guessing.
 
+
+Built and maintained by [Navid Moazzez](https://navid.me).
+
 ```
 You: find the receipt from that restaurant in Cambodia
 
@@ -25,7 +28,6 @@ Claude: Searching 36,753 items.
 
 Everything runs on your Mac. There is no backend.
 
-Built by [Navid Moazzez](https://navid.me).
 
 ## Contents
 
