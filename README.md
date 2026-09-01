@@ -62,7 +62,7 @@ Everything runs on your Mac. There is no backend.
 - Export the original of that one to my Desktop.
 - Which places show up most in my library?
 
-The first one is the point. Your library already knows what is in every photo, because Apple ran machine learning across all of it on your device and wrote the results into the library. Photos gives you a search box for that. This gives an agent the whole index, so it can filter, cross-reference and then actually look at the results before answering.
+The first one is the point. Your library already knows what is in every photo, because Apple ran machine learning across all of it on your device and wrote the results into the library. Photos gives you a search box for that. This gives an agent the entire index, so it can filter, cross-reference and then actually look at the results before answering.
 
 ## 2. Quick install ⚡
 
@@ -80,7 +80,7 @@ If you do not have [uv](https://docs.astral.sh/uv/), which is the Python equival
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-That is the whole install. No account, no API key, no credential.
+That completes the install. No account, no API key, no credential.
 
 ## 3. Setup 🔑
 
@@ -162,7 +162,7 @@ Apple Photos only exists on macOS, so there is no Windows or Linux path here.
 }
 ```
 
-**If it already has other servers**, add only the `"apple-photos"` block inside the existing `"mcpServers"` object, and put a comma after the previous server's closing brace. One misplaced comma invalidates the whole file, and then every server disappears, not just this one.
+**If it already has other servers**, add only the `"apple-photos"` block inside the existing `"mcpServers"` object, and put a comma after the previous server's closing brace. One misplaced comma invalidates the file, and then every server disappears, not just this one.
 
 > **Tip**
 > Claude Desktop does not inherit your shell PATH. If `uvx` is not found, run `which uvx` in a terminal and use that absolute path as `"command"`.
@@ -221,9 +221,13 @@ args = ["--from", "git+https://github.com/navidmoazzez/apple-photos-mcp", "apple
 
 Any stdio MCP client takes the same two things: the command `uvx`, and the args above.
 
-### Not claude.ai on the web
+### claude.ai on the web, with a relay
 
-claude.ai runs connectors from Anthropic's cloud, not from your Mac. This server reads a Photos library that only exists on your machine, so there is nothing for a remote URL to connect to. It is a local server by nature, and that is why it ships no HTTP transport and no Docker image.
+claude.ai runs connectors from Anthropic's cloud, so it cannot start a process on your Mac. That does not make it impossible, it makes it a two-part job.
+
+This package ships stdio only. To reach it from a browser you put a small remote MCP server in front of it, and have a local agent on the Mac poll that server for queued work and post the results back. The cloud half is reachable from claude.ai, the Mac half holds the library, and no port on your machine is ever exposed to the internet.
+
+That relay is not included here. It is a separate deployment with its own hosting and auth, so it is out of scope for a package you install with one command. Everything needed on the Mac side is already in this server.
 
 ## 5. Check it worked 🩺
 
@@ -256,7 +260,7 @@ The two things that actually fail:
 
 | Tool | What it does |
 |---|---|
-| `search_photos` | Search the whole library by look, text, place, person, date |
+| `search_photos` | Search your entire library by look, text, place, person, date |
 | `look_at_photos` | Render photos so the agent can actually see them |
 | `photo_info` | Everything known about specific items, including text read inside them |
 | `list_vocabulary` | The visual words this library knows |
@@ -309,7 +313,7 @@ The part that makes this worth more than the Photos search box.
 
 **Your typed metadata is almost certainly empty.** In the 37,129 item library this was built against, 3 items had a title and 3 had keywords. So searching for what you call a photo will fail. Search for what the photo looks like.
 
-**The vocabulary is closed, and that is a real limit.** Apple knows "Sunset" but not "golden hour". Ask for a word it has never heard of and the response says so in `unmatched_terms` and suggests words that do exist, rather than quietly returning something that looks like a match. `list_vocabulary` shows the whole list.
+**The vocabulary is closed, and that is a real limit.** Apple knows "Sunset" but not "golden hour". Ask for a word it has never heard of and the response says so in `unmatched_terms` and suggests words that do exist, rather than quietly returning something that looks like a match. `list_vocabulary` shows every term it knows.
 
 **Text found inside an image is weak evidence.** A screenshot full of words will match almost any query if you let it, and about one in five items in a typical library is a screenshot. Matches resting only on OCR are scored down, and screenshots compete at a discount unless you actually asked for a screenshot or a document.
 
@@ -398,7 +402,7 @@ The one exception worth knowing: when you ask your assistant to look at a photo,
 <details>
 <summary><b>What can it do that I cannot do in the Photos app already?</b></summary>
 
-Photos gives you one search box. This gives an agent the whole index at once, so it can combine things the app cannot: a scene label, a place, a date range and a person in a single query, then look at the results and tell you which one you meant.
+Photos gives you one search box. This gives an agent the entire index at once, so it can combine things the app cannot: a scene label, a place, a date range and a person in a single query, then look at the results and tell you which one you meant.
 
 It can also act on what it finds. "Find every receipt from Vietnam last year and put them in an album" is one sentence here and a long afternoon in the app.
 
@@ -432,7 +436,7 @@ No. It is MIT licensed and it talks to nothing but your own Mac, so there is no 
 
 It works with any client that runs a local MCP server: Claude Code, Claude Desktop, Cursor, VS Code, Windsurf, Codex CLI, Gemini CLI.
 
-It cannot work with claude.ai in a browser. Those connectors run in Anthropic's cloud, and your Photos library only exists on your Mac, so there is nothing for a remote server to read.
+For claude.ai in a browser you need one extra piece. Those connectors run in Anthropic's cloud and cannot start anything on your Mac, so it takes a small remote server that queues the work plus a local agent that carries it out and posts results back. It works, it is just a separate deployment rather than something this package installs for you.
 
 </details>
 

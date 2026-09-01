@@ -18,7 +18,7 @@ Reads open the library's SQLite directly and never launch Photos.app. Writes go 
 
 **No delete, and no approximation of one.** Not an oversight. Apple blocks it for every app, and a tool that emptied the Recently Deleted album or moved files on disk would be working around a protection the user is relying on.
 
-**No HTTP transport and no Docker image.** The server reads a library that exists only on one Mac, so a remotely hosted instance would have nothing to read. Shipping one would invite people to expose a personal photo library to the internet for no benefit.
+**No HTTP transport and no Docker image.** Not because remote access is impossible, it is not, but because the safe way to do it is a relay: a remote server that queues work and a local agent that carries it out, so no port on the Mac is ever exposed. Shipping a listening HTTP server in this package would instead invite people to open a personal photo library to the internet directly, which is the version worth avoiding.
 
 ## Credentials
 

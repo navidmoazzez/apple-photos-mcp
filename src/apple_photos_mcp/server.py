@@ -92,7 +92,7 @@ def build_server(config: Config | None = None) -> _Server:
         screenshots: str = "include",
         include_hidden: bool = False,
     ) -> str:
-        """Search the whole Apple Photos library using Apple's own on-device index.
+        """Search your entire Apple Photos library using Apple's own on-device index.
 
         Natural visual phrases work best: 'sunset beach', 'receipt', 'dinner in
         Stockholm', 'whiteboard'. Filters narrow before ranking.
