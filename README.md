@@ -1,3 +1,5 @@
+<img src="https://cdn.navid.media/connectors/apple-photos-icon.png" alt="Apple Photos" width="88">
+
 # Apple Photos MCP
 
 [![Stars](https://img.shields.io/github/stars/navidmoazzez/apple-photos-mcp?style=flat&logo=github&label=Stars)](https://github.com/navidmoazzez/apple-photos-mcp)
