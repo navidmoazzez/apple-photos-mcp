@@ -8,7 +8,7 @@
 Give any AI agent real access to your own Apple Photos library, so it can find, see, organize and export your photos instead of guessing.
 
 
-Built and maintained by [Navid Moazzez](https://navid.me).
+Built and maintained by [Navid Moazzez](https://navid.me?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp).
 
 ```
 You: find the receipt from that restaurant in Cambodia
@@ -467,9 +467,9 @@ Navid Moazzez is a leading AI business strategist and the host of the AI Creator
 
 **Links**
 
-- Personal website: [navid.me](https://navid.me)
-- Store: [navid.bio](https://navid.bio)
-- Navid Media: [navid.media](https://navid.media)
+- Personal website: [navid.me](https://navid.me?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp)
+- Store: [navid.bio](https://navid.bio?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp)
+- Navid Media: [navid.media](https://navid.media?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp)
 - YouTube: [@thenavidm](https://youtube.com/@thenavidm?sub_confirmation=1) and [@thenavidai](https://youtube.com/@thenavidai?sub_confirmation=1)
 - X: [@thenavidm](https://x.com/thenavidm)
 - Instagram: [@thenavidm](https://instagram.com/thenavidm)
@@ -491,4 +491,4 @@ Not affiliated with, endorsed by, or connected to Apple Inc. Apple, macOS, Photo
 
 ---
 
-© 2026 [NM Media](https://navid.media). Made with ❤️ by [Navid Moazzez](https://navid.me).
+© 2026 [NM Media](https://navid.media?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp). Made with ❤️ by [Navid Moazzez](https://navid.me?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp).
