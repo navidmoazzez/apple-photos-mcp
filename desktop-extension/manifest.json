@@ -1,0 +1,54 @@
+{
+  "manifest_version": "0.2",
+  "name": "apple-photos",
+  "display_name": "Apple Photos",
+  "version": "1.0.4",
+  "description": "Apple Photos MCP server for Claude Desktop. 13 tools to search, look at, organise and export your own library, entirely on your Mac.",
+  "long_description": "Connects Claude to the Photos library on this Mac.\n\nIt searches Apple's own on-device index rather than filenames: scene labels, text read out of images, activities, places and named faces. It can also look at the pictures, which is the difference between describing a photo and guessing from its filename.\n\nNothing is uploaded. There is no account, no API key and no backend; macOS asks for permission the first time it reads the library, and everything stays on the machine.\n\nNothing here can delete a photo, because macOS does not permit it. Archiving moves items into an album for you to empty by hand, and it is the one tool that asks first.\n\nRequires macOS and uv (https://docs.astral.sh/uv/), which fetches the Python engine on first run.",
+  "author": { "name": "Navid Moazzez", "url": "https://navid.me" },
+  "repository": { "type": "git", "url": "https://github.com/navidmoazzez/apple-photos-mcp-cli" },
+  "homepage": "https://github.com/navidmoazzez/apple-photos-mcp-cli",
+  "documentation": "https://github.com/navidmoazzez/apple-photos-mcp-cli#readme",
+  "support": "https://github.com/navidmoazzez/apple-photos-mcp-cli/issues",
+  "license": "MIT",
+  "keywords": ["apple-photos", "photos", "macos", "search", "mcp"],
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.js"],
+      "env": {
+        "APPLE_PHOTOS_READ_ONLY": "${user_config.read_only}",
+        "APPLE_PHOTOS_LIBRARY": "${user_config.library}",
+        "APPLE_PHOTOS_EXPORT_DIR": "${user_config.export_dir}"
+      }
+    }
+  },
+  "user_config": {
+    "read_only": {
+      "type": "boolean",
+      "title": "Read only",
+      "description": "Hide every tool that can change the library. Searching, looking and exporting still work.",
+      "default": false,
+      "required": false
+    },
+    "library": {
+      "type": "string",
+      "title": "Photos library",
+      "description": "Only needed if you keep your library somewhere other than ~/Pictures/Photos Library.photoslibrary.",
+      "required": false
+    },
+    "export_dir": {
+      "type": "directory",
+      "title": "Where exports go",
+      "description": "Originals are written here. Defaults to ~/Downloads/Photos Exports.",
+      "required": false
+    }
+  },
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin"],
+    "runtimes": { "node": ">=20" }
+  }
+}

@@ -1,0 +1,9 @@
+src-ts/
+tests/
+node_modules/
+.github/
+lib/*.map
+*.tsbuildinfo
+__pycache__/
+.venv/
+uv.lock

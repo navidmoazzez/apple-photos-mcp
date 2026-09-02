@@ -12,7 +12,7 @@ Apple Photos MCP server and CLI for Claude Code and AI agents. 13 tools to searc
 
 Give any AI agent real access to your own Apple Photos library, so it can find, see, organise and export your photos instead of guessing.
 
-Built and maintained by [Navid Moazzez](https://navid.me).
+Built and maintained by [Navid Moazzez](https://navid.me?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp-cli).
 
 <img src="https://cdn.navid.media/repos/apple-photos-mcp.gif?v=1" alt="Claude Code using the Apple Photos MCP server" width="520">
 
@@ -255,6 +255,8 @@ Quit Claude Desktop completely with Cmd+Q and reopen it.
 ```bash
 tail -f ~/Library/Logs/Claude/mcp-server-apple-photos.log
 ```
+
+There is also a one-click `.mcpb` bundle on the [releases page](https://github.com/navidmoazzez/apple-photos-mcp-cli/releases), installed through **Settings**, then **Extensions**, then **Install Extension**. It carries the server and the Python engine; uv still fetches the engine's dependencies on first run, because they build pyobjc and only work on macOS.
 
 ### Cursor
 
@@ -548,13 +550,13 @@ Delete the server from your client's config, or run `claude mcp remove apple-pho
 
 Run into a problem or have a question? [Open an issue](https://github.com/navidmoazzez/apple-photos-mcp-cli/issues) and I will help.
 
-## About the author 👋
+## About the author
 
 Navid Moazzez is a leading AI business strategist, and the host of the AI Creator Summit, watched by 100,000+ creators. He helps creators and founders master AI and build their own AI Operating System (AI OS) to automate their business and life. This Apple Photos MCP server is one piece of that system.
 
 **Links**
 
-- Personal website: [navid.me](https://navid.me)
+- Personal website: [navid.me](https://navid.me?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp-cli)
 - Link in bio: [navid.bio](https://navid.bio)
 - Navid Media: [navid.media](https://navid.media)
 - YouTube: [@thenavidm](https://youtube.com/@thenavidm?sub_confirmation=1) and [@thenavidai](https://youtube.com/@thenavidai?sub_confirmation=1)
@@ -562,6 +564,7 @@ Navid Moazzez is a leading AI business strategist, and the host of the AI Creato
 - Instagram: [@thenavidm](https://instagram.com/thenavidm)
 - LinkedIn: [thenavidm](https://linkedin.com/in/thenavidm)
 
+If this is useful, star the repo and come say hi on [X](https://x.com/thenavidm).
 
 ## Dependencies
 
@@ -579,4 +582,4 @@ Not affiliated with, endorsed by, or connected to Apple Inc. Apple, macOS, Photo
 
 ---
 
-© 2026 [NM Media](https://navid.media). Made with ❤️ by [Navid Moazzez](https://navid.me).
+© 2026 [NM Media](https://navid.media). Made with ❤️ by [Navid Moazzez](https://navid.me?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp-cli).
