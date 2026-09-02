@@ -33,8 +33,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/navidmoazzez/apple-photos-mcp"
-Issues = "https://github.com/navidmoazzez/apple-photos-mcp/issues"
+Homepage = "https://github.com/navidmoazzez/apple-photos-mcp-cli"
+Issues = "https://github.com/navidmoazzez/apple-photos-mcp-cli/issues"
 Author = "https://navid.me"
 
 [project.scripts]

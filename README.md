@@ -3,7 +3,7 @@
 # Apple Photos MCP + CLI
 
 [![npm](https://img.shields.io/npm/v/@thenavidm/apple-photos-mcp-cli?color=orange&label=npm)](https://www.npmjs.com/package/@thenavidm/apple-photos-mcp-cli)
-[![Stars](https://img.shields.io/github/stars/navidmoazzez/apple-photos-mcp?style=flat&logo=github&label=Stars)](https://github.com/navidmoazzez/apple-photos-mcp)
+[![Stars](https://img.shields.io/github/stars/navidmoazzez/apple-photos-mcp-cli?style=flat&logo=github&label=Stars)](https://github.com/navidmoazzez/apple-photos-mcp-cli)
 [![License](https://img.shields.io/badge/License-MIT-blue)](./LICENSE)
 [![YouTube](https://img.shields.io/badge/YouTube-@thenavidm-red?logo=youtube&logoColor=white)](https://youtube.com/@thenavidm?sub_confirmation=1)
 [![X](https://img.shields.io/badge/X-@thenavidm-black?logo=x)](https://x.com/thenavidm)
@@ -228,7 +228,7 @@ For one project instead of globally, use `.cursor/mcp.json` in that project.
     "apple-photos": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/navidmoazzez/apple-photos-mcp", "apple-photos-mcp"]
+      "args": ["--from", "git+https://github.com/navidmoazzez/apple-photos-mcp-cli", "apple-photos-mcp"]
     }
   }
 }
@@ -243,7 +243,7 @@ Reload the window: Cmd+Shift+P, then **Developer: Reload Window**.
 ```toml
 [mcp_servers.apple-photos]
 command = "uvx"
-args = ["--from", "git+https://github.com/navidmoazzez/apple-photos-mcp", "apple-photos-mcp"]
+args = ["--from", "git+https://github.com/navidmoazzez/apple-photos-mcp-cli", "apple-photos-mcp"]
 ```
 
 ### Gemini CLI
@@ -498,7 +498,7 @@ Delete the server from your client's config, or run `claude mcp remove apple-pho
 
 ## Questions
 
-Run into a problem or have a question? [Open an issue](https://github.com/navidmoazzez/apple-photos-mcp/issues) and I will help.
+Run into a problem or have a question? [Open an issue](https://github.com/navidmoazzez/apple-photos-mcp-cli/issues) and I will help.
 
 ## About the author
 

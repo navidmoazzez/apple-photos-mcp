@@ -41,7 +41,7 @@ The server instructions frame tool output as data to report on rather than instr
 
 ## Reporting a vulnerability
 
-[Report it privately](https://github.com/navidmoazzez/apple-photos-mcp/security/advisories/new). Please do not open a public issue for a security problem: an issue is visible to everyone the moment you file it, including whoever would use the bug.
+[Report it privately](https://github.com/navidmoazzez/apple-photos-mcp-cli/security/advisories/new). Please do not open a public issue for a security problem: an issue is visible to everyone the moment you file it, including whoever would use the bug.
 
 ## Good-faith research
 
