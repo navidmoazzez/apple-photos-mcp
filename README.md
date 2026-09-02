@@ -12,21 +12,7 @@ Give any AI agent real access to your own Apple Photos library, so it can find, 
 
 Built and maintained by [Navid Moazzez](https://navid.me?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp).
 
-```
-You: find the receipt from that restaurant in Cambodia
-
-Claude: Searching 36,753 items.
-
-  Three came back with a Receipt label and a Cambodian location.
-  Let me look at them.
-
-  It is IMG_1471, 11 May 2026, taken in S'ang, Kandal. A paper
-  receipt, handwritten, stamped and signed, dated 15/01/26.
-
-  It only exists in iCloud, so I read Apple's local thumbnail
-  rather than downloading the original. Want the full quality
-  file on your Desktop?
-```
+<img src="https://cdn.navid.media/repos/apple-photos-mcp.gif?v=1" alt="Claude Code using the Apple Photos MCP server" width="520">
 
 Everything runs on your Mac. There is no backend.
 
