@@ -18,10 +18,29 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.0.1
       - run: uv sync --all-extras --dev
       - name: Lint
         run: uv run ruff check src tests
       - name: Test
         run: uv run pytest -q
+
+  typescript:
+    # The TypeScript surface is what npm ships and what the HQ connector
+    # imports, so it has to build and pass on every push, not just the Python
+    # engine underneath it. The parity test here is the one that matters: it
+    # fails when the two tool lists drift apart.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+

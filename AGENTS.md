@@ -1,61 +1,30 @@
-# Working on this repo
+# CLAUDE.md
 
-For someone editing the server, not someone installing it. Installation is the
-README.
+See [AGENTS.md](./AGENTS.md). One document, so the two cannot drift.
 
-## Run it
+## The TypeScript surface
 
-```bash
-uv sync
-uv run python -m apple_photos_mcp doctor     # fastest proof it can read the library
-uv run python -m apple_photos_mcp            # stdio server
-```
+`src-ts/` is the MCP server and CLI; `src/apple_photos_mcp/` is the engine.
+Python stays because `osxphotos` and `photoscript` are the only libraries that
+can read a Photos library and both are Python-only. TypeScript wraps them for
+the things Python cost us: `npx` with no toolchain, a CLI, and a tool array the
+HQ connector can import.
 
-## Tests
+**Add a tool to Python and to `src-ts/tools/index.ts` together.** A parity test
+compares the two lists and fails when they drift. That drift is what left the
+hosted connector exposing 11 of 13 tools, missing `library_stats` and
+`look_at_photos`, so a model estimated library totals from keyword samples and
+recommended photos it had never seen.
 
-```bash
-uv run pytest -q
-uv run ruff check src tests
-```
+**Compiled output goes to `lib/`, never `dist/`.** Python packaging writes a
+`dist/.gitignore` containing `*`, which silently excludes every compiled file
+from the npm tarball. The package then installs with no code in it and the
+failure appears somewhere else entirely.
 
-**Tests never touch a real Photos library and never launch Photos.app.** CI runs
-on a Mac with no photos on it, and a test that needs a real library is a test
-nobody runs. `tests/conftest.py` builds assets by hand and fakes the library.
+**No `os` field in package.json.** It reads as correct and breaks the HQ build:
+that route imports the tool array on a Linux builder and never executes a tool,
+so the package has to install anywhere. `requireMac()` refuses to run off macOS
+instead, which is the same call `pyproject.toml` makes with its platform markers.
 
-This has bitten once already: `add_to_album` used to open Photos.app before
-checking whether any of its refs resolved, so a test that resolved nothing still
-launched Photos and hung for six minutes on a permission dialog. Resolve first,
-touch Photos second.
-
-## Decisions already made
-
-**Python, not TypeScript.** The house standard for these servers is TypeScript
-with an `npx` install. This is the documented exception: `osxphotos` is the only
-library that reads the Photos library database and Apple's ML metadata out of
-it, and it is Python only. There is no JavaScript equivalent on npm. Building
-this in TypeScript would mean shipping a Python sidecar, which costs the `npx`
-story anyway and adds a process boundary for nothing.
-
-**Reads bypass Photos.app, writes go through it.** Reading the SQLite directly
-is fast and needs nothing running. Writing to that database underneath a running
-Photos is how libraries get corrupted, so every write is AppleScript through
-`photoscript`.
-
-**Previews come from Apple's derivatives, not the original.** Most assets in a
-modern library have no local original. `resources/derivatives/<first hex char>/`
-holds thumbnails for everything, which is why previews work offline and instantly.
-Prefer a real image over a `.THM` video stub, then the largest.
-
-**Ranking weights live in `search.py:WEIGHTS`.** If you change them, run the
-search tests: `test_a_real_photo_outranks_a_screenshot_that_only_mentions_the_words`
-is the one that matters and it is easy to break.
-
-**No delete tool, ever.** macOS does not expose scripted deletion to any app.
-Do not add something that approximates it.
-
-## Index cache
-
-`~/.apple-photos-mcp/index/` holds a gzipped JSON snapshot keyed by library path
-and invalidated by the library database mtime. Bump `INDEX_VERSION` in
-`library.py` whenever the `Asset` shape changes, or old caches load with the
-wrong fields.
+    npm run typecheck && npm test && npm run build
+    uv run pytest -q

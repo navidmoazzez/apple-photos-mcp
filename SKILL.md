@@ -16,6 +16,22 @@ description: >
 The library is read directly from disk on this Mac. Nothing is uploaded, and
 nothing here can permanently delete a photo.
 
+
+## Two surfaces, same tools
+
+The MCP server is for work inside a conversation. The CLI is for scripting,
+piping and one-off questions, and costs no context until it is called.
+
+```bash
+apple-photos-cli library-stats --json
+apple-photos-cli search-photos "sunset" --limit 5 --screenshots exclude
+apple-photos-cli photo-info --refs IMG_2073.MOV
+apple-photos-cli <command> --help
+```
+
+The command is the tool name with dashes. `--select total,videos` trims the
+output, which matters on a library this size.
+
 ## The one thing that matters
 
 Search returns candidates. It does not return answers.

@@ -1,14 +1,17 @@
 <img src="https://cdn.navid.media/connectors/apple-photos-icon.png" alt="Apple Photos" width="88">
 
-# Apple Photos MCP
+# Apple Photos MCP + CLI
 
+[![npm](https://img.shields.io/npm/v/@thenavidm/apple-photos-mcp-cli?color=orange&label=npm)](https://www.npmjs.com/package/@thenavidm/apple-photos-mcp-cli)
 [![Stars](https://img.shields.io/github/stars/navidmoazzez/apple-photos-mcp?style=flat&logo=github&label=Stars)](https://github.com/navidmoazzez/apple-photos-mcp)
 [![License](https://img.shields.io/badge/License-MIT-blue)](./LICENSE)
 [![YouTube](https://img.shields.io/badge/YouTube-@thenavidm-red?logo=youtube&logoColor=white)](https://youtube.com/@thenavidm?sub_confirmation=1)
 [![X](https://img.shields.io/badge/X-@thenavidm-black?logo=x)](https://x.com/thenavidm)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-thenavidm-0A66C2?logo=linkedin&logoColor=white)](https://linkedin.com/in/thenavidm)
 
-Give any AI agent real access to your own Apple Photos library, so it can find, see, organize and export your photos instead of guessing.
+Apple Photos MCP server and CLI for Claude Code and AI agents. 13 tools to search, look at, organise and export your own library, entirely on your Mac.
+
+Give any AI agent real access to your own Apple Photos library, so it can find, see, organise and export your photos instead of guessing.
 
 Built and maintained by [Navid Moazzez](https://navid.me?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp).
 
@@ -16,12 +19,54 @@ Built and maintained by [Navid Moazzez](https://navid.me?utm_source=github&utm_m
 
 Everything runs on your Mac. There is no backend.
 
+## Two ways to use it
+
+### Command line
+
+`apple-photos-cli` in your terminal, for scripting, cron, pipes, or a quick
+question without opening anything:
+
+```bash
+apple-photos-cli                                    # every command, one line each
+apple-photos-cli library-stats --json               # real totals, one call
+apple-photos-cli search-photos "sunset" --limit 5 --screenshots exclude
+apple-photos-cli photo-info --refs IMG_2073.MOV
+apple-photos-cli export-originals --refs <uuid> --directory ./out
+apple-photos-cli <command> --help                   # what any command takes
+```
+
+`--json` gives JSON, `--compact` puts it on one line, `--select total,videos`
+keeps only the fields you name, and errors are JSON on stderr whichever you
+pick. `--confirm` is the shell spelling of the confirmation archiving requires.
+
+### MCP server, for AI agents
+
+`apple-photos-mcp` is what Claude Code, Claude Desktop, Cursor and the rest
+launch. You never run it by hand:
+
+```bash
+claude mcp add apple-photos -- npx -y @thenavidm/apple-photos-mcp-cli@latest
+```
+
+Then just ask: _"which receipts do I have from Vietnam?"_
+
+### Which one
+
+| What you are doing | Use |
+|---|---|
+| Inside a conversation with an agent | MCP |
+| Piping, scripting, cron, CI | CLI |
+| A one-off question in a terminal | CLI |
+
+They are the same program reading the same tool definitions, so anything one
+can do, the other can. A test asserts they cannot drift.
+
 ## Contents
 
 | | Section | |
 |---|---|---|
 | 1 | [What you can ask it](#1-what-you-can-ask-it-) | Real prompts, not features |
-| 2 | [Quick install](#2-quick-install-) | The package only |
+| 2 | [Quick install](#2-quick-install-) | One command, no credential |
 | 3 | [Setup](#3-setup-) | One permission, once |
 | 4 | [Connect your client](#4-connect-your-client-) | Every client, copy and paste |
 | 5 | [Check it worked](#5-check-it-worked-) | `doctor` |
@@ -49,21 +94,26 @@ The first one is the point. Your library already knows what is in every photo, b
 
 ## 2. Quick install ⚡
 
-macOS, and Python 3.11 or newer.
-
-> **Not on PyPI yet.** Install it from GitHub until it is published. The command below works today.
+macOS, and Node 20 or newer.
 
 ```bash
-uvx --from git+https://github.com/navidmoazzez/apple-photos-mcp apple-photos-mcp --version
+npx -y @thenavidm/apple-photos-mcp-cli@latest --version
 ```
 
-If you do not have [uv](https://docs.astral.sh/uv/), which is the Python equivalent of `npx`:
+That is the whole install. `npx` fetches it on demand, so there is nothing to
+update later.
+
+The engine underneath is Python, because `osxphotos` and `photoscript` are the
+only libraries that can read a Photos library and both are Python-only. You do
+not install them: [uv](https://docs.astral.sh/uv/) fetches them on first run and
+caches them. If you do not have uv:
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-That completes the install. No account, no API key, no credential.
+No account, no API key, no credential. macOS will ask for permission the first
+time something reads the library.
 
 ## 3. Setup 🔑
 
@@ -107,7 +157,7 @@ Set up apple-photos-mcp for me.
 
 ```bash
 claude mcp add apple-photos -s user \
-  -- uvx --from git+https://github.com/navidmoazzez/apple-photos-mcp apple-photos-mcp
+  -- npx -y @thenavidm/apple-photos-mcp-cli@latest
 ```
 
 `-s user` makes it available in every project rather than just the current one.
@@ -138,8 +188,8 @@ Apple Photos only exists on macOS, so there is no Windows or Linux path here.
 {
   "mcpServers": {
     "apple-photos": {
-      "command": "uvx",
-      "args": ["--from", "git+https://github.com/navidmoazzez/apple-photos-mcp", "apple-photos-mcp"]
+      "command": "npx",
+      "args": ["-y", "@thenavidm/apple-photos-mcp-cli@latest"]
     }
   }
 }
@@ -215,7 +265,7 @@ That relay is not included here. It is a separate deployment with its own hostin
 ## 5. Check it worked 🩺
 
 ```bash
-uvx --from git+https://github.com/navidmoazzez/apple-photos-mcp apple-photos-mcp doctor
+npx -y @thenavidm/apple-photos-mcp-cli@latest doctor
 ```
 
 Or just ask your agent: **"run doctor on apple photos"**.
