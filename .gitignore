@@ -13,4 +13,5 @@ uv.lock
 # Node side of the repo
 node_modules/
 dist/
+lib/
 *.tsbuildinfo

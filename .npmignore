@@ -1,0 +1,21 @@
+# npm falls back to .gitignore when this file is absent, and .gitignore has to
+# exclude dist/ so the compiled output never lands in git. That combination
+# published a package with no dist/ at all, so the HQ connector could not
+# resolve the tool array and the build failed. This file exists to override it.
+
+node_modules/
+src-ts/
+dist/
+tests/
+.github/
+src/apple_photos_mcp/__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+uv.lock
+tsconfig.json
+vitest.config.ts
+.DS_Store
