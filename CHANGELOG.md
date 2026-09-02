@@ -12,7 +12,7 @@
 | Node (TypeScript surface) | 20+ | 2026-09-02 |
 | `@modelcontextprotocol/sdk` | 1.x | 2026-09-02 |
 
-## 1.0.3, 2026-09-03
+## 1.0.4, 2026-09-03
 
 Fixes found by a full review of the TypeScript surface.
 
