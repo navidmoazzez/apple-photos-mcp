@@ -9,3 +9,8 @@ build/
 .ruff_cache/
 .DS_Store
 uv.lock
+
+# Node side of the repo
+node_modules/
+dist/
+*.tsbuildinfo

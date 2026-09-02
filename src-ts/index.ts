@@ -52,9 +52,41 @@ function invokedAsCli(): boolean {
   return name.startsWith("apple-photos-cli");
 }
 
+/**
+ * This only runs on a Mac, but the package must still install anywhere.
+ *
+ * An `"os": ["darwin"]` field in package.json looks right and breaks the thing
+ * that matters: the HQ connector imports ALL_TOOLS for its schemas on a Linux
+ * builder, never executing a tool, and npm refuses to install at all. The
+ * pyproject next door already made this call for the same reason — its comment
+ * notes that platform markers make `pip install` fail on Linux "instead of
+ * installing and then telling the user this server needs a Mac".
+ *
+ * So: install anywhere, refuse to run anywhere but macOS, and say why.
+ */
+function requireMac(): void {
+  if (process.platform === "darwin") return;
+  process.stderr.write(
+    `${JSON.stringify({
+      error:
+        "Apple Photos only exists on macOS, so this server cannot run on " +
+        `${process.platform}. It installs anywhere because the tool definitions are ` +
+        "read by other tooling, but reaching a library needs a Mac.",
+    }, null, 2)}\n`,
+  );
+  process.exit(1);
+}
+
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
   const command = argv[0];
+
+  if (argv.includes("--version") || argv.includes("-v")) {
+    process.stdout.write(`${VERSION}\n`);
+    return;
+  }
+
+  requireMac();
 
   if (invokedAsCli() && argv.length === 0) {
     process.exitCode = await runCli(["tools"]);

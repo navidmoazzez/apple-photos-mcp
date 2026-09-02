@@ -1,6 +1,6 @@
 {
   "name": "@thenavidm/apple-photos-mcp-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Apple Photos MCP server and CLI for Claude Code and AI agents. 13 tools to search, look at, organise and export your own Photos library, entirely on your Mac.",
   "type": "module",
   "main": "./dist/index.js",
@@ -8,8 +8,9 @@
     "apple-photos-mcp": "dist/index.js",
     "apple-photos-cli": "dist/index.js"
   },
-  "engines": { "node": ">=20" },
-  "os": ["darwin"],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
@@ -28,8 +29,32 @@
   "license": "MIT",
   "author": "Navid Moazzez (https://navid.me)",
   "homepage": "https://navid.me",
-  "repository": { "type": "git", "url": "git+https://github.com/navidmoazzez/apple-photos-mcp.git" },
-  "bugs": { "url": "https://github.com/navidmoazzez/apple-photos-mcp/issues" },
-  "keywords": ["mcp","model-context-protocol","apple-photos","photos","macos","mcp-server","claude","claude-code","ai-agents","llm-tools","cli"],
-  "files": ["dist","src","pyproject.toml","README.md","SKILL.md","LICENSE"]
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/navidmoazzez/apple-photos-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/navidmoazzez/apple-photos-mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "apple-photos",
+    "photos",
+    "macos",
+    "mcp-server",
+    "claude",
+    "claude-code",
+    "ai-agents",
+    "llm-tools",
+    "cli"
+  ],
+  "files": [
+    "dist",
+    "src",
+    "pyproject.toml",
+    "README.md",
+    "SKILL.md",
+    "LICENSE"
+  ]
 }
