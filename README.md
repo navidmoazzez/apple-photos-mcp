@@ -478,6 +478,8 @@ Navid Moazzez is a leading AI business strategist and the host of the AI Creator
 - Instagram: [@thenavidm](https://instagram.com/thenavidm)
 - LinkedIn: [thenavidm](https://linkedin.com/in/thenavidm)
 
+If this is useful, star the repo and come say hi on [X](https://x.com/thenavidm).
+
 ## Dependencies
 
 | Package | License | Why |
