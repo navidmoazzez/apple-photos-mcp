@@ -14,8 +14,8 @@
  * HQ connector can import so the hosted surface cannot drift from this one.
  *
  * Calls are proxied to the Python MCP server over stdio using the official
- * client, rather than a bespoke JSON protocol. That means the Python needs no
- * changes at all, and there is exactly one implementation of every tool.
+ * client, so the Python needs no changes and there is one implementation of
+ * every tool.
  */
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -24,19 +24,23 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import type { Config } from "./config.js";
 import { BridgeError } from "./errors.js";
 
-export type BridgeResult = { text: string; isError: boolean };
+/** A content part as the MCP protocol carries it: text, image, or anything later. */
+export type ContentPart = { type: string; text?: string; data?: string; mimeType?: string };
 
-/**
- * One long-lived connection to the Python server.
- *
- * Spawning per call would pay `uv`'s dependency resolution and a Photos library
- * scan every time, which is seconds each. The process is started on first use
- * and reused.
- */
+export type BridgeResult = {
+  /** Every part, untouched. Images must survive: look_at_photos returns them. */
+  content: ContentPart[];
+  /** The text parts joined, for the common case of a JSON payload. */
+  text: string;
+  isError: boolean;
+};
+
 export class PythonBridge {
   private readonly config: Config;
   private client?: Client;
   private starting?: Promise<Client>;
+  /** The tail of the engine's stderr, so a failure can say what actually went wrong. */
+  private stderrTail = "";
 
   constructor(config: Config) {
     this.config = config;
@@ -47,13 +51,8 @@ export class PythonBridge {
     if (this.starting) return this.starting;
 
     this.starting = (async () => {
-      const client = new Client(
-        { name: "apple-photos-cli", version: "1.0.0" },
-        { capabilities: {} },
-      );
+      const client = new Client({ name: "apple-photos-cli", version: "1.0.0" }, { capabilities: {} });
 
-      // `uv run` resolves osxphotos and photoscript on first use and caches
-      // them, so the reader needs neither a virtualenv nor a pip install.
       const transport = new StdioClientTransport({
         command: this.config.pythonCommand,
         args: this.config.pythonArgs,
@@ -61,13 +60,34 @@ export class PythonBridge {
         stderr: "pipe",
       });
 
+      // Drain stderr immediately. The SDK pipes it into a PassThrough with a
+      // 16KB buffer; with no reader that fills, the OS pipe fills behind it,
+      // and the child blocks writing to stderr. osxphotos is chatty on a large
+      // library, so this is a real hang, not a theoretical one. Keeping the
+      // tail also means a failure can name the actual cause — a missing module,
+      // a Full Disk Access denial — instead of a boilerplate "install uv".
+      transport.stderr?.on("data", (chunk: Buffer) => {
+        this.stderrTail = (this.stderrTail + chunk.toString()).slice(-4000);
+      });
+
+      // A dead client must not stay cached, or one engine crash bricks every
+      // later call for the life of the process with "Connection closed".
+      const forget = (): void => {
+        if (this.client === client) this.client = undefined;
+      };
+      client.onclose = forget;
+      client.onerror = forget;
+
       try {
-        await client.connect(transport);
+        // The default is 60s, and a cold `uv` run builds pyobjc, which takes
+        // longer than that on a fresh cache. Failing there reported "install
+        // uv" at the one moment uv was working correctly.
+        await client.connect(transport, { timeout: this.config.startupTimeoutMs });
       } catch (error) {
         throw new BridgeError(
           `Could not start the Photos engine with \`${this.config.pythonCommand} ${this.config.pythonArgs.join(" ")}\`. ` +
-            `Install uv (https://docs.astral.sh/uv/) or set APPLE_PHOTOS_PYTHON to a Python that has osxphotos and photoscript. ` +
-            `Underlying error: ${(error as Error).message}`,
+            `Install uv (https://docs.astral.sh/uv/) or set APPLE_PHOTOS_PYTHON to a Python that has osxphotos and photoscript.`,
+          [(error as Error).message, this.stderrTail.trim()].filter(Boolean).join("\n"),
         );
       }
 
@@ -82,24 +102,40 @@ export class PythonBridge {
     }
   }
 
-  /** Call one Python tool and return its text payload. */
-  async call(tool: string, args: Record<string, unknown>): Promise<BridgeResult> {
+  /**
+   * Call one Python tool and return every content part.
+   *
+   * `timeoutMs` matters: exporting originals pulls them out of iCloud first and
+   * rendering previews is not quick either, so the protocol default of 60s
+   * cancels work the engine is still doing.
+   */
+  async call(tool: string, args: Record<string, unknown>, timeoutMs?: number): Promise<BridgeResult> {
     const client = await this.connect();
 
-    const result = (await client.callTool({ name: tool, arguments: args })) as {
-      content?: { type: string; text?: string }[];
-      isError?: boolean;
-    };
+    let result: { content?: ContentPart[]; isError?: boolean };
+    try {
+      result = (await client.callTool(
+        { name: tool, arguments: args },
+        undefined,
+        { timeout: timeoutMs ?? this.config.requestTimeoutMs },
+      )) as { content?: ContentPart[]; isError?: boolean };
+    } catch (error) {
+      throw new BridgeError(
+        `The Photos engine failed while running ${tool}.`,
+        [(error as Error).message, this.stderrTail.trim()].filter(Boolean).join("\n"),
+      );
+    }
 
-    const text = (result.content ?? [])
+    const content = result.content ?? [];
+    const text = content
       .filter((part) => part.type === "text" && typeof part.text === "string")
       .map((part) => part.text as string)
       .join("\n");
 
-    return { text, isError: result.isError === true };
+    return { content, text, isError: result.isError === true };
   }
 
-  /** What the Python server says it offers. Used by `doctor` to prove the two agree. */
+  /** What the Python server says it offers, for checking the two lists agree. */
   async listTools(): Promise<string[]> {
     const client = await this.connect();
     const { tools } = await client.listTools();
@@ -107,7 +143,9 @@ export class PythonBridge {
   }
 
   async close(): Promise<void> {
-    await this.client?.close().catch(() => undefined);
+    this.starting = undefined;
+    const client = this.client;
     this.client = undefined;
+    await client?.close().catch(() => undefined);
   }
 }

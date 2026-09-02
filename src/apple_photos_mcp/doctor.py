@@ -67,7 +67,7 @@ def run(config: Config, lib: PhotosLibrary) -> dict[str, Any]:
                 found,
                 str(lib_path),
                 "Open Photos once so macOS records a library path, or set "
-                "APPLE_PHOTOS_MCP_LIBRARY to a .photoslibrary folder.",
+                "APPLE_PHOTOS_LIBRARY to a .photoslibrary folder.",
             )
         )
     except Exception as exc:
@@ -76,7 +76,7 @@ def run(config: Config, lib: PhotosLibrary) -> dict[str, Any]:
                 "library found",
                 False,
                 str(exc),
-                "Set APPLE_PHOTOS_MCP_LIBRARY to your .photoslibrary path.",
+                "Set APPLE_PHOTOS_LIBRARY to your .photoslibrary path.",
             )
         )
 

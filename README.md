@@ -3,8 +3,7 @@
 # Apple Photos MCP + CLI
 
 [![npm](https://img.shields.io/npm/v/@thenavidm/apple-photos-mcp-cli?color=orange&label=npm)](https://www.npmjs.com/package/@thenavidm/apple-photos-mcp-cli)
-[![Stars](https://img.shields.io/github/stars/navidmoazzez/apple-photos-mcp-cli?style=flat&logo=github&label=Stars)](https://github.com/navidmoazzez/apple-photos-mcp-cli)
-[![License](https://img.shields.io/badge/License-MIT-blue)](./LICENSE)
+[![License](https://img.shields.io/badge/licence-MIT-green)](./LICENSE)
 [![YouTube](https://img.shields.io/badge/YouTube-@thenavidm-red?logo=youtube&logoColor=white)](https://youtube.com/@thenavidm?sub_confirmation=1)
 [![X](https://img.shields.io/badge/X-@thenavidm-black?logo=x)](https://x.com/thenavidm)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-thenavidm-0A66C2?logo=linkedin&logoColor=white)](https://linkedin.com/in/thenavidm)
@@ -13,7 +12,7 @@ Apple Photos MCP server and CLI for Claude Code and AI agents. 13 tools to searc
 
 Give any AI agent real access to your own Apple Photos library, so it can find, see, organise and export your photos instead of guessing.
 
-Built and maintained by [Navid Moazzez](https://navid.me?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp).
+Built and maintained by [Navid Moazzez](https://navid.me).
 
 <img src="https://cdn.navid.media/repos/apple-photos-mcp.gif?v=1" alt="Claude Code using the Apple Photos MCP server" width="520">
 
@@ -61,10 +60,59 @@ Then just ask: _"which receipts do I have from Vietnam?"_
 They are the same program reading the same tool definitions, so anything one
 can do, the other can. A test asserts they cannot drift.
 
+## Features
+
+Every tool is both a command and an MCP tool, with the same name. The command is
+the tool name with dashes.
+
+| Capability | CLI command | MCP tool |
+|---|---|---|
+| Search the whole library | `apple-photos-cli search-photos` | `search_photos` |
+| Actually look at photos | `apple-photos-cli look-at-photos` | `look_at_photos` |
+| Full metadata, camera and lens | `apple-photos-cli photo-info` | `photo_info` |
+| Real totals in one call | `apple-photos-cli library-stats` | `library_stats` |
+| What Apple can search for | `apple-photos-cli list-vocabulary` | `list_vocabulary` |
+| Export originals to disk | `apple-photos-cli export-originals` | `export_originals` |
+| Favourite or unfavourite | `apple-photos-cli favorite-photos` | `favorite_photos` |
+| Title and description | `apple-photos-cli set-photo-title` / `set-photo-description` | `set_photo_title` / `set_photo_description` |
+| Keywords and albums | `apple-photos-cli add-keywords` / `add-to-album` | `add_keywords` / `add_to_album` |
+| Move into an archive album | `apple-photos-cli archive-photos` | `archive_photos` |
+| Check the setup | `apple-photos-cli doctor` | `doctor` |
+| Find the right command | `apple-photos-cli which "..."` | not a tool |
+
+All 13 with their arguments are in [section 6](#6-tools-).
+
+## Output and exit codes
+
+Results on stdout, errors on stderr as JSON, so one parse handles both.
+
+| Flag | Result |
+|---|---|
+| none | pretty JSON |
+| `--json` | JSON, always |
+| `--compact` | the same JSON on one line |
+| `--select a,b.c` | keep only these fields |
+
+| Code | Means |
+|---|---|
+| `0` | it worked |
+| `1` | it failed: the engine refused, a guard blocked it, nothing matched |
+| `2` | it was typed wrong: a missing flag, a bad value, an unknown option |
+
+## Which surface, and what each costs
+
+An MCP server is charged on every turn; a CLI costs nothing until it is called.
+
+The `tools/list` payload for these 13 tools is about **2,800 tokens**, plus the
+server instructions, on every turn of every conversation whether you use it or
+not. The CLI is free until you run something, which is why both exist.
+
 ## Contents
 
 | | Section | |
 |---|---|---|
+| | [Features](#features) | Every tool, both surfaces |
+| | [Output and exit codes](#output-and-exit-codes) | What scripts branch on |
 | 1 | [What you can ask it](#1-what-you-can-ask-it-) | Real prompts, not features |
 | 2 | [Quick install](#2-quick-install-) | One command, no credential |
 | 3 | [Setup](#3-setup-) | One permission, once |
@@ -197,8 +245,8 @@ Apple Photos only exists on macOS, so there is no Windows or Linux path here.
 
 **If it already has other servers**, add only the `"apple-photos"` block inside the existing `"mcpServers"` object, and put a comma after the previous server's closing brace. One misplaced comma invalidates the file, and then every server disappears, not just this one.
 
-> **Tip**
-> Claude Desktop does not inherit your shell PATH. If `uvx` is not found, run `which uvx` in a terminal and use that absolute path as `"command"`.
+> [!TIP]
+> Claude Desktop does not inherit your shell PATH. If `npx` is not found, run `which npx` in a terminal and use that absolute path as `"command"`.
 
 Quit Claude Desktop completely with Cmd+Q and reopen it.
 
@@ -227,8 +275,8 @@ For one project instead of globally, use `.cursor/mcp.json` in that project.
   "servers": {
     "apple-photos": {
       "type": "stdio",
-      "command": "uvx",
-      "args": ["--from", "git+https://github.com/navidmoazzez/apple-photos-mcp-cli", "apple-photos-mcp"]
+      "command": "npx",
+      "args": ["-y", "@thenavidm/apple-photos-mcp-cli@latest"]
     }
   }
 }
@@ -242,8 +290,8 @@ Reload the window: Cmd+Shift+P, then **Developer: Reload Window**.
 
 ```toml
 [mcp_servers.apple-photos]
-command = "uvx"
-args = ["--from", "git+https://github.com/navidmoazzez/apple-photos-mcp-cli", "apple-photos-mcp"]
+command = "npx"
+args = ["-y", "@thenavidm/apple-photos-mcp-cli@latest"]
 ```
 
 ### Gemini CLI
@@ -252,7 +300,7 @@ args = ["--from", "git+https://github.com/navidmoazzez/apple-photos-mcp-cli", "a
 
 ### Everything else
 
-Any stdio MCP client takes the same two things: the command `uvx`, and the args above.
+Any stdio MCP client takes the same two things: the command `npx`, and the args above.
 
 ### claude.ai on the web, with a relay
 
@@ -393,7 +441,7 @@ Run `doctor` before guessing. It names which of these it is.
 |---|---|---|
 | Permission denied reading the library | No Full Disk Access | [Section 3](#3-setup-). Quit the app with Cmd+Q, not just the window. |
 | Server does not appear in the client | Bad JSON, usually a comma | Paste the config into a JSON validator. One bad comma hides every server. |
-| `uvx: command not found` | The app cannot see your shell PATH | Use the absolute path from `which uvx` |
+| `npx: command not found` | The app cannot see your shell PATH | Use the absolute path from `which npx` |
 | Write tools are missing | `APPLE_PHOTOS_READ_ONLY` is set | Unset it and restart the client |
 | Reads work, writes fail | Photos automation not approved | Approve the popup, or Privacy & Security, then Automation |
 | First search takes half a minute | Building the index | One time, about 25 seconds for 37,000 items. Cached afterwards. |
@@ -500,21 +548,20 @@ Delete the server from your client's config, or run `claude mcp remove apple-pho
 
 Run into a problem or have a question? [Open an issue](https://github.com/navidmoazzez/apple-photos-mcp-cli/issues) and I will help.
 
-## About the author
+## About the author 👋
 
-Navid Moazzez is a leading AI business strategist and the host of the AI Creator Summit, watched by 100,000+ creators. He helps creators and founders master AI and build their own AI Operating System (AI OS) to automate their business and life. This Apple Photos MCP server is one piece of that system.
+Navid Moazzez is a leading AI business strategist, and the host of the AI Creator Summit, watched by 100,000+ creators. He helps creators and founders master AI and build their own AI Operating System (AI OS) to automate their business and life. This Apple Photos MCP server is one piece of that system.
 
 **Links**
 
-- Personal website: [navid.me](https://navid.me?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp)
-- Link in bio: [navid.bio](https://navid.bio?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp)
-- Navid Media: [navid.media](https://navid.media?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp)
+- Personal website: [navid.me](https://navid.me)
+- Link in bio: [navid.bio](https://navid.bio)
+- Navid Media: [navid.media](https://navid.media)
 - YouTube: [@thenavidm](https://youtube.com/@thenavidm?sub_confirmation=1) and [@thenavidai](https://youtube.com/@thenavidai?sub_confirmation=1)
 - X: [@thenavidm](https://x.com/thenavidm)
 - Instagram: [@thenavidm](https://instagram.com/thenavidm)
 - LinkedIn: [thenavidm](https://linkedin.com/in/thenavidm)
 
-If this is useful, star the repo and come say hi on [X](https://x.com/thenavidm).
 
 ## Dependencies
 
@@ -532,4 +579,4 @@ Not affiliated with, endorsed by, or connected to Apple Inc. Apple, macOS, Photo
 
 ---
 
-© 2026 [NM Media](https://navid.media?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp). Made with ❤️ by [Navid Moazzez](https://navid.me?utm_source=github&utm_medium=readme&utm_campaign=apple-photos-mcp).
+© 2026 [NM Media](https://navid.media). Made with ❤️ by [Navid Moazzez](https://navid.me).

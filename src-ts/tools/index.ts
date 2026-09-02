@@ -23,7 +23,7 @@ export const readTools = [
       "Search the entire Photos library through Apple's own on-device index: what a picture looks like, text read inside it, the place, the activity, and any named faces.\n\nThis covers every item, not a sample. `limit` caps what comes back, not what is searched, so the match count is library-wide.\n\nApple's visual vocabulary is a closed list of roughly 1,500 words. A term it has never heard of matches nothing, and no rephrasing of the same idea helps: check `unmatched_terms` in the result, or call list_vocabulary.\n\nSearch returns candidates, not answers. The filenames tell you nothing, so call look_at_photos on the top few before describing them.",
     schema: {
       query: z.string().optional().describe("What to look for, in Apple's vocabulary. Empty returns the newest items."),
-      limit: z.number().int().min(1).max(200).optional().describe("How many to return. Defaults to 12."),
+      limit: z.number().int().min(1).max(100).optional().describe("How many to return, 1-100. Defaults to 12."),
       kind: z.enum(["photo", "video"]).optional().describe("Restrict to photos or videos."),
       person: z.string().optional().describe("A face the user has named in Photos."),
       album: z.string().optional().describe("Restrict to one album."),
@@ -47,10 +47,13 @@ export const readTools = [
     description:
       "Return the images themselves so they can be looked at, rather than reasoned about from filenames and labels.\n\nCall this on the top few results before describing, recommending or choosing between them. Search gives candidates; this is the only way to know what is in them.",
     schema: {
-      refs: REFS,
-      size: z.number().int().min(64).max(2048).optional().describe("Longest edge in pixels. Defaults to 640."),
+      refs: z
+        .array(z.string())
+        .describe("Item refs: uuids from search_photos, or exact filenames. Only the first 8 are rendered; the result says so."),
+      size: z.number().int().min(128).max(2048).optional().describe("Longest edge in pixels, 128-2048. Defaults to 640."),
     },
     risk: "read",
+    timeoutMs: 300_000,
   }),
 
   defineTool({
@@ -58,7 +61,11 @@ export const readTools = [
     title: "Full metadata for specific items",
     description:
       "Everything Photos knows about specific items: date, place, camera and lens, dimensions, albums, keywords, faces, and whether the original is on this Mac or still in iCloud.",
-    schema: { refs: REFS },
+    schema: {
+      refs: z
+        .array(z.string())
+        .describe("Item refs: uuids from search_photos, or exact filenames. Capped at 50 per call."),
+    },
     risk: "read",
   }),
 
@@ -100,11 +107,19 @@ export const writeTools = [
     description:
       "Export the original files to a folder on this Mac. Most items live in iCloud rather than on the disk, so an export downloads them first and can be slow.\n\nNothing is uploaded anywhere: the files land in a local folder and stay there.",
     schema: {
-      refs: REFS,
-      directory: z.string().optional().describe("Where to write. Defaults to a dated folder under ~/Downloads."),
+      refs: z
+        .array(z.string())
+        .describe("Item refs to export. Capped at 100 per call."),
+      directory: z.string().optional().describe("Where to write. Defaults to ~/Downloads/Photos Exports."),
     },
-    risk: "write",
+    // Exporting copies files out; it does not change the library, which is why
+    // the engine keeps offering it under read-only. Classifying it as a write
+    // here hid it and the two layers disagreed.
+    risk: "read",
     idempotent: true,
+    // Originals usually live in iCloud, so each one is downloaded before it is
+    // written. The protocol default of 60s cancels work the engine is still doing.
+    timeoutMs: 900_000,
     summary: (args) => `export ${(args.refs as string[]).length} original(s)`,
   }),
 

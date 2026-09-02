@@ -1,6 +1,6 @@
 # Changelog
 
-# Versions
+## Versions
 
 | Component | Version | Checked |
 |---|---|---|
@@ -12,7 +12,26 @@
 | Node (TypeScript surface) | 20+ | 2026-09-02 |
 | `@modelcontextprotocol/sdk` | 1.x | 2026-09-02 |
 
-## 1.0.2
+## 1.0.3, 2026-09-03
+
+Fixes found by a full review of the TypeScript surface.
+
+- `look_at_photos` returned captions and no pictures. The bridge kept only text content parts, so the one tool whose purpose is seeing deleted every image before it reached the caller.
+- Engine failures were reported as success. The Python returns its errors as an ordinary value, which the protocol marks `isError: false`, so a failed export exited 0 with the error on stdout and `export-originals ... && rm ...` would carry on.
+- A crashed engine bricked the session. The dead client stayed cached, so every later call failed with "Connection closed" for the life of the process.
+- The engine's stderr was piped and never read, which threw away the real cause of a failure and could block the child once the buffer filled.
+- Timeouts were the protocol default of 60s, which a cold `uv` run and any real export both exceed.
+- `uv run` now passes `--no-project`, so it stops trying to sync whatever project the client happened to be started in.
+- `--refs` accepts several bare arguments: `photo-info uuid1 uuid2` used to be an error.
+- Empty strings reach the engine, so a title or description can be cleared.
+- `which` maps this library's vocabulary; "save my photos to disk" now answers `export-originals` rather than four browsing tools.
+- Removed `login` and `capture` from the command list, and the Midjourney flag aliases and synonyms behind them. None of it existed here.
+- `limit` caps at 100 and `size` at 128-2048, matching the engine instead of advertising ceilings it silently clamped. `photo_info` and `export_originals` say where they truncate.
+- `export_originals` is a read: it copies files out without changing the library, which is why the engine offers it under read-only.
+- `doctor` told users to set `APPLE_PHOTOS_MCP_LIBRARY`, which nothing reads. It is `APPLE_PHOTOS_LIBRARY`.
+- Boolean environment variables are an allowlist on both sides, so `READ_ONLY=enabled` cannot mean read-only in one layer and read-write in the other.
+
+## 1.0.2, 2026-09-02
 
 - TypeScript MCP server and CLI over the Python engine, published as `@thenavidm/apple-photos-mcp-cli`. `npx` with no toolchain to install first, and every tool is also a shell command.
 - The tool array is exported, so the HQ connector imports it rather than listing tools by hand. That route had drifted to 11 of 13, missing `library_stats` and `look_at_photos`, which meant a model estimated library totals from keyword samples and recommended photos it had never seen.

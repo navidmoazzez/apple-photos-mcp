@@ -122,32 +122,16 @@ export function flagsFor(shape: ZodRawShape): Flag[] {
   return Object.entries(shape).map(([key, schema]) => toFlag(key, schema as ZodTypeAny));
 }
 
-/**
- * Midjourney's own parameter spellings, accepted as flags.
- *
- * The schema names things in full because a tool description is read by a model
- * that has never seen a Midjourney prompt. A person at a terminal has, and they
- * will type `--ar 16:9`, because that is what the parameter is called
- * everywhere Midjourney documents it. Refusing the name the whole ecosystem
- * uses, to protect a naming convention nobody outside this repo can see, would
- * be the wrong trade.
- */
+/** Shorthands for this repo's arguments. Kept small on purpose. */
 export const FLAG_ALIASES: Record<string, string> = {
-  ar: "aspect",
-  v: "version",
-  s: "stylize",
-  c: "chaos",
-  sref: "style_refs",
-  sw: "style_weight",
-  oref: "omni_refs",
-  ow: "omni_weight",
-  iw: "image_weight",
-  q: "quality",
-  no: "negative",
-  p: "profile",
-  r: "repeat",
-  id: "job_id",
-  job: "job_id",
+  uuid: "refs",
+  uuids: "refs",
+  ref: "refs",
+  file: "refs",
+  files: "refs",
+  out: "directory",
+  dir: "directory",
+  n: "limit",
 };
 
 class UsageError extends Error {}
@@ -226,20 +210,21 @@ export function parseArgs(argv: string[], flags: Flag[]): Record<string, unknown
     }
   }
 
-  // One bare argument fills the first flag that is waiting for one, so
-  // `search-photos "sunset"` works before anyone reads any help.
-  //
-  // Required flags come first, then the first unfilled one. Without that
-  // fallback a command whose arguments are all optional — search being the
-  // obvious one — refuses the single most natural way to call it.
+  // Bare arguments fill the first flag that is waiting for one. A repeatable
+  // flag takes all of them, because `photo-info uuid1 uuid2` is the obvious
+  // call and erroring on the second was pure friction.
   if (positional.length > 0) {
     const target =
       flags.find((flag) => flag.required && out[flag.key] === undefined) ??
       flags.find((flag) => out[flag.key] === undefined && flag.kind !== "boolean");
     if (!target) throw new UsageError(`Unexpected argument '${positional[0]}'.`);
-    if (positional.length > 1) throw new UsageError(`Unexpected argument '${positional[1]}'.`);
-    const value = coerce(target, positional[0] as string);
-    out[target.key] = target.repeatable ? [value] : value;
+
+    if (target.repeatable) {
+      out[target.key] = [...((out[target.key] as unknown[]) ?? []), ...positional.map((p) => coerce(target, p))];
+    } else {
+      if (positional.length > 1) throw new UsageError(`Unexpected argument '${positional[1]}'.`);
+      out[target.key] = coerce(target, positional[0] as string);
+    }
   }
 
   return out;
@@ -408,8 +393,6 @@ function renderToolList(tools: AnyToolSpec[]): string {
   lines.push(`  ${bin} <command> --help    what it takes`);
   lines.push(`  ${bin} schema <command>    the JSON schema an MCP client sees`);
   lines.push(`  ${bin} doctor              check the setup`);
-  lines.push(`  ${bin} login               open the controlled window to sign in`);
-  lines.push(`  ${bin} capture             record what the web app calls, to extend this tool`);
   lines.push(``);
   return lines.join("\n");
 }
@@ -423,60 +406,61 @@ const STOP_WORDS = new Set([
 ]);
 
 /**
- * Words people use mapped onto words the tools use.
+ * Words people use mapped onto words these tools use.
  *
- * Without this, "make a picture" matches nothing, because every tool says
- * "generate" and "image". A lookup that only works when you already know the
- * vocabulary is not a lookup.
+ * Without this, "save my photos to disk" matches four browsing tools and never
+ * export-originals, because nothing in that phrase appears in its name or
+ * description. Every target below has to be vocabulary a tool actually
+ * contains; a test asserts it.
  */
 export const SYNONYMS: Record<string, string[]> = {
-  picture: ["image"],
-  pictures: ["image"],
-  photo: ["image"],
-  photos: ["image"],
-  pic: ["image"],
-  pics: ["image"],
-  art: ["image"],
-  artwork: ["image"],
-  render: ["generate", "imagine"],
-  renders: ["image"],
-  make: ["generate", "imagine"],
-  create: ["generate", "imagine"],
-  draw: ["generate", "imagine"],
-  generation: ["generate"],
-  imagining: ["imagine"],
-  save: ["download"],
-  saving: ["download"],
-  fetch: ["download"],
-  grab: ["download"],
-  disk: ["download"],
-  history: ["jobs"],
-  past: ["jobs"],
-  previous: ["jobs"],
-  recent: ["jobs"],
-  running: ["queue"],
-  rendering: ["queue"],
-  pending: ["queue"],
-  progress: ["queue"],
-  redo: ["rerun"],
-  again: ["rerun"],
-  reroll: ["rerun"],
-  retry: ["rerun"],
-  account: ["whoami"],
-  login: ["whoami"],
-  logged: ["whoami"],
-  signed: ["whoami"],
-  auth: ["whoami"],
-  session: ["whoami"],
-  who: ["whoami"],
-  style: ["explore"],
-  styles: ["explore"],
-  inspiration: ["explore"],
-  browse: ["explore"],
-  folder: ["folders"],
-  moodboard: ["moodboards"],
-  quota: ["storage"],
-  space: ["storage"],
+  save: ["export", "originals"],
+  saving: ["export", "originals"],
+  download: ["export", "originals"],
+  copy: ["export", "originals"],
+  disk: ["export", "originals"],
+  file: ["export", "originals"],
+  files: ["export", "originals"],
+  find: ["search"],
+  show: ["search", "look"],
+  see: ["look"],
+  view: ["look"],
+  preview: ["look"],
+  image: ["photos"],
+  images: ["photos"],
+  picture: ["photos"],
+  pictures: ["photos"],
+  pic: ["photos"],
+  pics: ["photos"],
+  video: ["photos"],
+  videos: ["photos"],
+  tag: ["keywords"],
+  tags: ["keywords"],
+  label: ["keywords"],
+  labels: ["keywords"],
+  caption: ["description"],
+  name: ["title"],
+  heart: ["favourite", "favorite"],
+  star: ["favourite", "favorite"],
+  like: ["favourite", "favorite"],
+  delete: ["archive"],
+  remove: ["archive"],
+  trash: ["archive"],
+  hide: ["archive"],
+  count: ["totals", "stats"],
+  total: ["totals", "stats"],
+  totals: ["totals"],
+  many: ["totals"],
+  size: ["totals"],
+  metadata: ["metadata"],
+  camera: ["camera"],
+  lens: ["lens"],
+  album: ["album"],
+  albums: ["album"],
+  vocabulary: ["vocabulary"],
+  words: ["vocabulary"],
+  setup: ["setup"],
+  broken: ["setup"],
 };
 
 function terms(text: string): string[] {
@@ -664,12 +648,6 @@ export async function runCli(argv: string[]): Promise<number> {
     return 0;
   } catch (error) {
     if (error instanceof UsageError) {
-      emitError(error);
-      return 2;
-    }
-    // A bad --ar or --sref is the caller typing it wrong, the same class of
-    // mistake as a missing flag, so it exits 2 rather than 1.
-    if (error instanceof PhotosError && error.name === "ValidationError") {
       emitError(error);
       return 2;
     }

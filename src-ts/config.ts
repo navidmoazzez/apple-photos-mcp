@@ -11,6 +11,10 @@ import { fileURLToPath } from "node:url";
 export type Config = {
   pythonCommand: string;
   pythonArgs: string[];
+  /** How long to wait for the engine to start. A cold `uv` run builds pyobjc. */
+  startupTimeoutMs: number;
+  /** Per-call deadline. Exports pull originals out of iCloud, so it is generous. */
+  requestTimeoutMs: number;
   pythonEnv: Record<string, string>;
   readOnly: boolean;
   allowDestructive: boolean;
@@ -18,10 +22,24 @@ export type Config = {
   exportDir?: string;
 };
 
+/**
+ * An allowlist, matching the engine's own `_flag()`.
+ *
+ * A denylist made `APPLE_PHOTOS_READ_ONLY=enabled` mean read-only here and
+ * read-write in Python. Both sides now agree on what true looks like.
+ */
 function bool(name: string, fallback: boolean): boolean {
   const raw = process.env[name];
   if (raw === undefined || raw.trim() === "") return fallback;
-  return !["0", "false", "no", "off"].includes(raw.trim().toLowerCase());
+  return ["1", "true", "yes", "on"].includes(raw.trim().toLowerCase());
+}
+
+function int(name: string, fallback: number, min: number, max: number): number {
+  const raw = process.env[name];
+  if (raw === undefined || raw.trim() === "") return fallback;
+  const value = Number(raw);
+  if (!Number.isFinite(value)) return fallback;
+  return Math.min(Math.max(Math.trunc(value), min), max);
 }
 
 function str(name: string): string | undefined {
@@ -49,11 +67,17 @@ export function loadConfig(): Config {
   const pythonCommand = explicit ?? "uv";
   const pythonArgs = explicit
     ? ["-m", "apple_photos_mcp"]
-    : ["run", "--with", "osxphotos", "--with", "photoscript", "--with", "mcp", "python3", "-m", "apple_photos_mcp"];
+    // `--no-project` matters: without it `uv run` discovers whatever
+    // pyproject.toml sits above the client's working directory and tries to
+    // sync that project instead. The engine is found via PYTHONPATH, so
+    // project discovery is pure downside.
+    : ["run", "--no-project", "--with", "osxphotos", "--with", "photoscript", "--with", "mcp", "python3", "-m", "apple_photos_mcp"];
 
   return {
     pythonCommand,
     pythonArgs,
+    startupTimeoutMs: int("APPLE_PHOTOS_STARTUP_TIMEOUT_MS", 300_000, 10_000, 1_800_000),
+    requestTimeoutMs: int("APPLE_PHOTOS_REQUEST_TIMEOUT_MS", 300_000, 5_000, 1_800_000),
     pythonEnv: { PYTHONPATH: str("APPLE_PHOTOS_PYTHONPATH") ?? packagedEnginePath() },
     readOnly: bool("APPLE_PHOTOS_READ_ONLY", false),
     allowDestructive: bool("APPLE_PHOTOS_ALLOW_DESTRUCTIVE", true),
@@ -66,8 +90,17 @@ export function loadConfig(): Config {
 export const ENV_VARS = [
   "APPLE_PHOTOS_PYTHON",
   "APPLE_PHOTOS_PYTHONPATH",
+  "APPLE_PHOTOS_STARTUP_TIMEOUT_MS",
+  "APPLE_PHOTOS_REQUEST_TIMEOUT_MS",
   "APPLE_PHOTOS_READ_ONLY",
   "APPLE_PHOTOS_ALLOW_DESTRUCTIVE",
   "APPLE_PHOTOS_AUDIT_LOG",
   "APPLE_PHOTOS_EXPORT_DIR",
+  // Read by the Python engine, forwarded through the inherited environment.
+  "APPLE_PHOTOS_LIBRARY",
+  "APPLE_PHOTOS_PREVIEW_DIR",
+  "APPLE_PHOTOS_PREVIEW_PX",
+  "APPLE_PHOTOS_PREVIEW_MAX",
+  "APPLE_PHOTOS_WRITE_BATCH_MAX",
+  "APPLE_PHOTOS_ARCHIVE_ALBUM",
 ] as const;

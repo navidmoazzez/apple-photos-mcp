@@ -9,9 +9,16 @@ import { PhotosError, ToolError } from "../errors.js";
 import { annotationsFor, needsConfirm, type Risk, type WriteGuard } from "../safety.js";
 
 export type ToolContext = { bridge: PythonBridge; config: Config; guard: WriteGuard };
-export type ToolResult = { content: { type: "text"; text: string }[]; isError?: boolean };
+export type ToolResult = { content: { type: string; text?: string; data?: string; mimeType?: string }[]; isError?: boolean };
 
 export function ok(data: unknown): ToolResult {
+  // Content parts that are already MCP-shaped pass straight through. That is
+  // what keeps look_at_photos working: it returns images interleaved with
+  // captions, and serialising them into a text blob deletes the pictures,
+  // leaving a tool whose whole purpose is seeing that returns filenames.
+  if (Array.isArray(data) && data.every((p) => p && typeof p === "object" && "type" in p)) {
+    return { content: data as ToolResult["content"] };
+  }
   const text = typeof data === "string" ? data : JSON.stringify(data, null, 2);
   return { content: [{ type: "text", text }] };
 }
@@ -36,6 +43,8 @@ export type ToolSpec<S extends ZodRawShape> = {
   schema: S;
   risk: Risk;
   idempotent?: boolean;
+  /** Override the per-call deadline. Exports pull originals out of iCloud first. */
+  timeoutMs?: number;
   /** The Python tool this proxies to. Defaults to `name`. */
   python?: string;
   summary?: (args: z.infer<z.ZodObject<S>>) => string;
@@ -64,21 +73,37 @@ export async function runTool(
     ctx.guard.check(spec.name, spec.risk, (args as { confirm?: boolean }).confirm, summary);
   }
 
-  // Drop empties so Python sees its own defaults rather than nulls.
+  // Only undefined and null are dropped. An empty string is a real value here:
+  // clearing a caption is `set_photo_description --description ""`, and
+  // stripping it made the engine reject the call for a missing required
+  // argument the caller had plainly supplied.
   const payload = Object.fromEntries(
-    Object.entries(args).filter(([, v]) => v !== undefined && v !== null && v !== ""),
+    Object.entries(args).filter(([, v]) => v !== undefined && v !== null),
   );
 
-  const result = await ctx.bridge.call(spec.python ?? spec.name, payload);
+  const result = await ctx.bridge.call(spec.python ?? spec.name, payload, spec.timeoutMs);
   if (result.isError) throw new ToolError(result.text || `${spec.name} failed.`);
 
-  // The Python returns JSON as text. Parse it so `--json` gives real fields and
-  // an MCP client gets structure rather than a string containing JSON.
+  // Anything that is not plain text — images from look_at_photos — is returned
+  // as content parts rather than squashed into a string.
+  if (result.content.some((part) => part.type !== "text")) return result.content;
+
+  let parsed: unknown;
   try {
-    return JSON.parse(result.text);
+    parsed = JSON.parse(result.text);
   } catch {
     return result.text;
   }
+
+  // The engine reports its own failures as an ordinary return carrying
+  // {"error": ...}, which the protocol marks successful. Without this check a
+  // failed export exited 0 with the error printed on stdout, so
+  // `export-originals ... && rm ...` would go on to delete the source.
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+    const record = parsed as Record<string, unknown>;
+    if (typeof record.error === "string" && record.ok !== true) throw new ToolError(record.error);
+  }
+  return parsed;
 }
 
 export function register(server: McpServer, contextFor: () => ToolContext, spec: AnyToolSpec): void {

@@ -44,7 +44,7 @@ Safety:
   APPLE_PHOTOS_ALLOW_DESTRUCTIVE=0 keep reads and edits, block archiving
   APPLE_PHOTOS_AUDIT_LOG           append-only log of every attempted change
 
-https://github.com/navidmoazzez/apple-photos-mcp
+https://github.com/navidmoazzez/apple-photos-mcp-cli
 `;
 
 function invokedAsCli(): boolean {
@@ -58,7 +58,7 @@ function invokedAsCli(): boolean {
  * An `"os": ["darwin"]` field in package.json looks right and breaks the thing
  * that matters: the HQ connector imports ALL_TOOLS for its schemas on a Linux
  * builder, never executing a tool, and npm refuses to install at all. The
- * pyproject next door already made this call for the same reason — its comment
+ * pyproject next door already made this call for the same reason, its comment
  * notes that platform markers make `pip install` fail on Linux "instead of
  * installing and then telling the user this server needs a Mac".
  *
@@ -83,6 +83,11 @@ async function main(): Promise<void> {
 
   if (argv.includes("--version") || argv.includes("-v")) {
     process.stdout.write(`${VERSION}\n`);
+    return;
+  }
+
+  if (argv.includes("--help") || argv.includes("-h") || command === "help") {
+    process.stdout.write(HELP);
     return;
   }
 
@@ -112,11 +117,6 @@ async function main(): Promise<void> {
     process.stdout.write(HELP);
     return;
   }
-  if (argv.includes("--version") || argv.includes("-v")) {
-    process.stdout.write(`${VERSION}\n`);
-    return;
-  }
-
   const built = buildServer(loadConfig());
   const transport = new StdioServerTransport();
   await built.server.connect(transport);

@@ -1,6 +1,6 @@
-# CLAUDE.md
+# Working on this repo
 
-See [AGENTS.md](./AGENTS.md). One document, so the two cannot drift.
+See [CLAUDE.md](./CLAUDE.md). One document, so the two cannot drift.
 
 ## The TypeScript surface
 
