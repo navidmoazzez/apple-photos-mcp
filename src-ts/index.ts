@@ -44,7 +44,7 @@ Safety:
   APPLE_PHOTOS_ALLOW_DESTRUCTIVE=0 keep reads and edits, block archiving
   APPLE_PHOTOS_AUDIT_LOG           append-only log of every attempted change
 
-https://github.com/navidmoazzez/apple-photos-mcp-cli
+https://github.com/thenavidm/apple-photos-mcp-cli
 `;
 
 function invokedAsCli(): boolean {

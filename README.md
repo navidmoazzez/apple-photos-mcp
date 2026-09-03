@@ -255,7 +255,7 @@ Quit Claude Desktop completely with Cmd+Q and reopen it.
 tail -f ~/Library/Logs/Claude/mcp-server-apple-photos.log
 ```
 
-There is also a one-click `.mcpb` bundle on the [releases page](https://github.com/navidmoazzez/apple-photos-mcp-cli/releases), installed through **Settings**, then **Extensions**, then **Install Extension**. It carries the server and the Python engine; uv still fetches the engine's dependencies on first run, because they build pyobjc and only work on macOS.
+There is also a one-click `.mcpb` bundle on the [releases page](https://github.com/thenavidm/apple-photos-mcp-cli/releases), installed through **Settings**, then **Extensions**, then **Install Extension**. It carries the server and the Python engine; uv still fetches the engine's dependencies on first run, because they build pyobjc and only work on macOS.
 
 ### Cursor
 
@@ -547,7 +547,7 @@ Delete the server from your client's config, or run `claude mcp remove apple-pho
 
 ## Questions
 
-Run into a problem or have a question? [Open an issue](https://github.com/navidmoazzez/apple-photos-mcp-cli/issues) and I will help.
+Run into a problem or have a question? [Open an issue](https://github.com/thenavidm/apple-photos-mcp-cli/issues) and I will help.
 
 ## About the author
 
